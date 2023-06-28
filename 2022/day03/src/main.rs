@@ -5,7 +5,7 @@ fn main() {
 }
 
 fn part1(input: &str) {
-    let result: i32 = input
+    let result: u32 = input
         .lines()
         .map(|line| {
             let (first, second) = line.split_at(line.len() / 2);
@@ -21,38 +21,38 @@ fn part1(input: &str) {
 }
 
 fn part2(input: &str) {
+    let result: u32 = group(input)
+        .map(|(first, second, third)| get_priority(find_badge(first, second, third)))
+        .sum();
+
+    println!("sum of priorities of groups' badges: {}", result);
+}
+
+fn group(input: &str) -> impl Iterator<Item = (&str, &str, &str)> {
     let mut lines = input.lines();
     let first_items = lines.clone().step_by(3);
     lines.next();
     let second_items = lines.clone().step_by(3);
     lines.next();
     let third_items = lines.clone().step_by(3);
-    let groups = first_items.zip(second_items).zip(third_items);
-
-    let result: i32 = groups
-        .map(|((first, second), third)| get_priority(find_badge(first, second, third)))
-        .sum();
-
-    println!("sum of priorities of groups' badges: {}", result);
+    first_items
+        .zip(second_items)
+        .zip(third_items)
+        .map(|((f, s), t)| (f, s, t))
 }
 
 fn find_badge(first: &str, second: &str, third: &str) -> char {
-    for char1 in first.chars() {
-        for char2 in second.chars() {
-            for char3 in third.chars() {
-                if char1 == char2 && char1 == char3 {
-                    return char1;
-                }
+    for item in first.chars() {
+        if let Some(_) = second.find(item) {
+            if let Some(_) = third.find(item) {
+                return item;
             }
         }
     }
-    panic!("Did'nt find common items");
+    panic!("Common item not found!");
 }
 
-fn get_priority(category: char) -> i32 {
-    match category {
-        'a'..='z' => category as i32 - 'a' as i32 + 1,
-        'A'..='Z' => category as i32 - 'A' as i32 + 27,
-        _ => panic!("{:?}", category),
-    }
+fn get_priority(category: char) -> u32 {
+    const ASCII_LETTERS: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    ASCII_LETTERS.find(category).unwrap() as u32 + 1
 }
