@@ -1,47 +1,107 @@
-const ROCK_POINT: i32 = 1;
-const PAPER_POINT: i32 = 2;
-const SCISOR_POINT: i32 = 3;
-
-const LOSS_POINT: i32 = 0;
-const DRAW_POINT: i32 = 3;
-const VICTORY_POINT: i32 = 6;
-
 fn main() {
-    // let input = include_str!("../test.txt");
     let input = include_str!("../adventofcode.com-2022-day02-input.txt");
+    part1(input);
+    part2(input);
+}
 
-    let score1: i32 = input
+fn part1(input: &str) {
+    let result: u32 = input
         .lines()
-        .map(|line| match line {
-            "A X" => DRAW_POINT + ROCK_POINT,
-            "A Y" => VICTORY_POINT + PAPER_POINT,
-            "A Z" => LOSS_POINT + SCISOR_POINT,
-            "B X" => LOSS_POINT + ROCK_POINT,
-            "B Y" => DRAW_POINT + PAPER_POINT,
-            "B Z" => VICTORY_POINT + SCISOR_POINT,
-            "C X" => VICTORY_POINT + ROCK_POINT,
-            "C Y" => LOSS_POINT + PAPER_POINT,
-            "C Z" => DRAW_POINT + SCISOR_POINT,
-            _ => panic!("ERROR"),
+        .map(|line| {
+            let me = Jokenpo::from(line.chars().nth(2).unwrap());
+            let other = Jokenpo::from(line.chars().nth(0).unwrap());
+            let result = me.compete(other);
+            result.get_score() + me.get_score()
         })
         .sum();
+    println!("part 1: {}", result);
+}
 
-    let score2: i32 = input
+fn part2(input: &str) {
+    let result: u32 = input
         .lines()
-        .map(|line| match line {
-            "A X" => LOSS_POINT + SCISOR_POINT,
-            "A Y" => DRAW_POINT + ROCK_POINT,
-            "A Z" => VICTORY_POINT + PAPER_POINT,
-            "B X" => LOSS_POINT + ROCK_POINT,
-            "B Y" => DRAW_POINT + PAPER_POINT,
-            "B Z" => VICTORY_POINT + SCISOR_POINT,
-            "C X" => LOSS_POINT + PAPER_POINT,
-            "C Y" => DRAW_POINT + SCISOR_POINT,
-            "C Z" => VICTORY_POINT + ROCK_POINT,
-            _ => panic!("ERROR"),
+        .map(|line| {
+            let other = Jokenpo::from(line.chars().nth(0).unwrap());
+            let result = RoundResult::from(line.chars().nth(2).unwrap());
+            let me = result.over(other);
+            result.get_score() + me.get_score()
         })
         .sum();
+    println!("part 2: {}", result);
+}
 
-    println!("strategy score: {}", score1);
-    println!("right strategy score: {}", score2);
+#[derive(Clone, Copy)]
+enum Jokenpo {
+    Rock,
+    Paper,
+    Scisor,
+}
+
+impl Jokenpo {
+    fn from(c: char) -> Self {
+        match c {
+            'A' | 'X' => Self::Rock,
+            'B' | 'Y' => Self::Paper,
+            'C' | 'Z' => Self::Scisor,
+            _ => panic!("Invalid char {}", c),
+        }
+    }
+
+    fn compete(&self, other: Jokenpo) -> RoundResult {
+        match (self, other) {
+            (Self::Rock, Self::Paper) => RoundResult::Loss,
+            (Self::Rock, Self::Scisor) => RoundResult::Victory,
+            (Self::Paper, Self::Rock) => RoundResult::Victory,
+            (Self::Paper, Self::Scisor) => RoundResult::Loss,
+            (Self::Scisor, Self::Rock) => RoundResult::Loss,
+            (Self::Scisor, Self::Paper) => RoundResult::Victory,
+            _ => RoundResult::Draw,
+        }
+    }
+
+    fn get_score(&self) -> u32 {
+        match self {
+            Self::Rock => 1,
+            Self::Paper => 2,
+            Self::Scisor => 3,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+enum RoundResult {
+    Loss,
+    Draw,
+    Victory,
+}
+
+impl RoundResult {
+    fn from(c: char) -> Self {
+        match c {
+            'X' => Self::Loss,
+            'Y' => Self::Draw,
+            'Z' => Self::Victory,
+            _ => panic!("Invalid char {}", c),
+        }
+    }
+
+    fn over(&self, jokenpo: Jokenpo) -> Jokenpo {
+        match (self, jokenpo) {
+            (Self::Loss, Jokenpo::Rock) => Jokenpo::Scisor,
+            (Self::Loss, Jokenpo::Paper) => Jokenpo::Rock,
+            (Self::Loss, Jokenpo::Scisor) => Jokenpo::Paper,
+            (Self::Victory, Jokenpo::Rock) => Jokenpo::Paper,
+            (Self::Victory, Jokenpo::Paper) => Jokenpo::Scisor,
+            (Self::Victory, Jokenpo::Scisor) => Jokenpo::Rock,
+            _ => jokenpo,
+        }
+    }
+
+    fn get_score(&self) -> u32 {
+        match self {
+            Self::Loss => 0,
+            Self::Draw => 3,
+            Self::Victory => 6,
+        }
+    }
 }
