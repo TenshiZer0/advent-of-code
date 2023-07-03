@@ -33,3 +33,26 @@ fn find_message_start(input: &str, header_size: usize) -> usize {
     }
     panic!("Não há uma sequência de {header_size} caracteres diferentes");
 }
+
+#[cfg(test)]
+mod test {
+    use crate::*;
+
+    #[test]
+    fn test() {
+        const HEADER_SIZE: usize = 4;
+        let input = include_str!("../test-input.txt");
+        let lines: Vec<_> = input.lines().collect();
+        let r0 = find_message_start(lines[0], HEADER_SIZE);
+        let r1 = find_message_start(lines[1], HEADER_SIZE);
+        let r2 = find_message_start(lines[2], HEADER_SIZE);
+        let r3 = find_message_start(lines[3], HEADER_SIZE);
+        let r4 = find_message_start(lines[4], HEADER_SIZE);
+
+        assert_eq!(r0, 7);
+        assert_eq!(r1, 5);
+        assert_eq!(r2, 6);
+        assert_eq!(r3, 10);
+        assert_eq!(r4, 11);
+    }
+}
