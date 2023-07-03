@@ -1,13 +1,17 @@
 fn main() {
-    test();
+    let input = include_str!("../adventofcode.com-2022-day06-input.txt");
+    part1(input);
+    part2(input);
 }
 
-fn test() {
-    let input = include_str!("../input.txt");
-    for line in input.lines() {
-        let output = find_message_start(line, 4);
-        println!("{output}");
-    }
+fn part1(input: &str) {
+    let output = find_message_start(input, 4);
+    println!("part 1: {output}");
+}
+
+fn part2(input: &str) {
+    let output = find_message_start(input, 14);
+    println!("part 2: {output}");
 }
 
 fn find_message_start(input: &str, header_size: usize) -> usize {
